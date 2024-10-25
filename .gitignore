@@ -2,3 +2,4 @@ package
 .terraform
 dist
 lambda.zip
+__pycache__
