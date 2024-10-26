@@ -106,3 +106,126 @@ output "api_endpoint" {
   value       = "${aws_api_gateway_deployment.my_deployment.invoke_url}/dev"
   description = "The base URL of the API Gateway endpoint"
 }
+
+# frontend
+# Frontend assets S3
+
+resource "random_string" "bucket_suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
+
+resource "aws_s3_bucket" "static_assets" {
+  bucket = "collab-${random_string.bucket_suffix.result}"
+  # website {
+  #   index_document = "index.html"
+  #   error_document = "404.html"
+  # }
+}
+
+resource "aws_s3_bucket_website_configuration" "static_assets_website" {
+  bucket = aws_s3_bucket.static_assets.id
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "404.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "static_assets_policy" {
+  bucket = aws_s3_bucket.static_assets.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.static_assets.arn}/*"
+      }
+    ]
+  })
+
+  depends_on = [aws_s3_bucket_public_access_block.example]
+}
+
+# Ensure public access block is not preventing public policies
+resource "aws_s3_bucket_public_access_block" "example" {
+  bucket = aws_s3_bucket.static_assets.id
+
+  block_public_acls   = false
+  block_public_policy = false
+  restrict_public_buckets = false
+  ignore_public_acls  = false
+}
+
+# resource "aws_cloudfront_distribution" "cdn" {
+#   origin {
+#     domain_name = aws_s3_bucket.static_assets.bucket_regional_domain_name
+#     origin_id   = "S3-static-assets"
+#   }
+
+#   enabled             = true
+#   is_ipv6_enabled     = true
+#   comment             = "Static assets CDN"
+
+#   default_cache_behavior {
+#     allowed_methods  = ["GET", "HEAD"]
+#     cached_methods   = ["GET", "HEAD"]
+#     target_origin_id = "S3-static-assets"
+    
+#     forwarded_values {
+#       query_string = false
+#       cookies {
+#         forward = "none"
+#       }
+#     }
+    
+#     viewer_protocol_policy = "redirect-to-https"
+#   }
+
+#   restrictions {
+#     geo_restriction {
+#       restriction_type = "none"
+#     }
+#   }
+
+#   viewer_certificate {
+#     # Use ACM or a custom SSL certificate
+#     acm_certificate_arn      = "your-acm-certificate-arn"
+#     ssl_support_method       = "sni-only"
+#   }
+# }
+
+# Deploy resources using a local script
+resource "null_resource" "deploy_resources" {
+  provisioner "local-exec" {
+    command = <<EOT
+      # Set API endpoint and build
+      export VITE_API_ENDPOINT=${aws_api_gateway_deployment.my_deployment.invoke_url}
+      cd frontend
+      pnpm run build
+
+      # Sync to S3
+      aws s3 sync dist s3://${aws_s3_bucket.static_assets.bucket}/
+
+      # Invalidate CloudFront distribution
+    EOT
+      # aws cloudfront create-invalidation --distribution-id ${aws_cloudfront_distribution.cdn.id} --paths "/*"
+  }
+
+  triggers = {
+    redeploy_time = timestamp()  # Forces execution whenever `terraform apply` is run
+  }
+
+  # Ensure this runs after the creation of S3 and CloudFront
+  depends_on = [
+    aws_s3_bucket.static_assets,
+    aws_api_gateway_deployment.my_deployment
+    # aws_cloudfront_distribution.cdn
+  ]
+}
