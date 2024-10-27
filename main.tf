@@ -94,7 +94,12 @@ resource "aws_api_gateway_deployment" "my_deployment" {
   rest_api_id = aws_api_gateway_rest_api.my_api.id
   stage_name  = "dev"
 
-  depends_on = [aws_api_gateway_integration.proxy_integration]
+  depends_on = [
+   aws_api_gateway_integration.proxy_integration,
+    aws_api_gateway_integration.options_integration,
+    aws_api_gateway_method_response.options_response_200,
+    aws_api_gateway_integration_response.options_integration_response_200
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "api_gw_logging" {
@@ -201,6 +206,8 @@ resource "aws_s3_bucket_public_access_block" "example" {
 #   }
 # }
 
+
+
 # Deploy resources using a local script
 resource "null_resource" "deploy_resources" {
   provisioner "local-exec" {
@@ -228,4 +235,59 @@ resource "null_resource" "deploy_resources" {
     aws_api_gateway_deployment.my_deployment
     # aws_cloudfront_distribution.cdn
   ]
+}
+
+resource "null_resource" "build_lambda" {
+  provisioner "local-exec" {
+    command = "./lambda.sh"
+  }
+
+  # Optional: Add triggers to determine when to rerun the script
+  triggers = {
+    build_time = timestamp()  # This will run every time
+  }
+}
+
+resource "aws_api_gateway_method" "options_proxy" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.proxy.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "options_integration" {
+  rest_api_id   = aws_api_gateway_rest_api.my_api.id
+  resource_id   = aws_api_gateway_resource.proxy.id
+  http_method   = aws_api_gateway_method.options_proxy.http_method
+  type          = "MOCK"
+  
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "options_response_200" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.options_proxy.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true,
+    "method.response.header.Access-Control-Allow-Methods" = true,
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "options_integration_response_200" {
+  rest_api_id = aws_api_gateway_rest_api.my_api.id
+  resource_id = aws_api_gateway_resource.proxy.id
+  http_method = aws_api_gateway_method.options_proxy.http_method
+  status_code = aws_api_gateway_method_response.options_response_200.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'",
+    "method.response.header.Access-Control-Allow-Methods" = "'OPTIONS,GET,POST,PUT,DELETE'",
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
 }
