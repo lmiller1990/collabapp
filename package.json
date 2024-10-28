@@ -1,0 +1,9 @@
+{
+  "name": "collab",
+  "workspaces": {
+    "packages": [
+      "frontend"
+    ]
+  },
+  "packageManager": "pnpm@9.10.0"
+}
