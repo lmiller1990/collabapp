@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import Editor from "./components/Editor.vue";
+import ShareModal from "./components/ShareModal.vue";
+import Button from "./components/Button.vue";
 
 const msg = ref("");
 
@@ -16,6 +18,8 @@ async function greet() {
 }
 
 greet();
+
+const open = ref(true);
 </script>
 
 <template>
@@ -23,7 +27,12 @@ greet();
     <div class="">
       <Editor />
     </div>
-    <!-- <div class="">other</div> -->
+    <div class="flex justify-end">
+      <div>
+        <ShareModal v-model="open" />
+        <Button @click="open = true">Share</Button>
+      </div>
+    </div>
   </div>
 </template>
 
