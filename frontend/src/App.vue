@@ -5,8 +5,7 @@ import Editor from "./components/Editor.vue";
 const msg = ref("");
 
 async function greet() {
-  // const res = await window.fetch(`${import.meta.env.VITE_API_ENDPOINT}/greet`, {
-  const res = await window.fetch(`/api/greet`, {
+  const res = await window.fetch(`${import.meta.env.VITE_API_ENDPOINT}/greet`, {
     mode: "cors",
     headers: {
       "Content-Type": "application/json", // or any other required header
