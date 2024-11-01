@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 import os
 
 from fastapi import FastAPI
@@ -37,6 +37,12 @@ def greet():
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
+
+
+@app.post("/share")
+def share(emails: List[str]):
+    print(emails)
+    pass
 
 
 handler = Mangum(app, lifespan="off")

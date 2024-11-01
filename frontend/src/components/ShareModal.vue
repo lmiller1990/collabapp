@@ -2,11 +2,9 @@
 import {
   Dialog,
   DialogPanel,
-  DialogTitle,
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
-import { CheckIcon } from "@heroicons/vue/24/outline";
 import { ShareIcon } from "@heroicons/vue/24/solid";
 import { XMarkIcon } from "@heroicons/vue/24/solid";
 import { onMounted, ref } from "vue";
@@ -35,16 +33,24 @@ function handleInput() {
     return;
   }
 
-  // handle
   const toAdd = current.value.split(",")[0];
   emails.value.push(toAdd);
   current.value = "";
-  //
 }
 
 async function handleSubmit() {
-  //
-  console.log("submit");
+  try {
+    await window.fetch(`${import.meta.env.VITE_API_ENDPOINT}/share`, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(emails.value),
+    });
+  } catch (e) {
+    // Dunno
+  }
 }
 </script>
 
@@ -132,9 +138,8 @@ async function handleSubmit() {
               </div>
               <div class="mt-5 sm:mt-6">
                 <button
-                  type="button"
+                  type="submit"
                   class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  @click="() => (open = false)"
                 >
                   Share
                 </button>
