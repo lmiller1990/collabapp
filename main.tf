@@ -55,6 +55,18 @@ resource "aws_lambda_function" "fastapi_test" {
   source_code_hash = filebase64sha256("lambda.zip")
 }
 
+# Dynamo 
+resource "aws_dynamodb_table" "collab" {
+  name           = "collab"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+}
+
 resource "aws_api_gateway_rest_api" "my_api" {
   name = "MyAPIGateway"
 }
@@ -123,6 +135,14 @@ resource "random_string" "bucket_suffix" {
 
 resource "aws_s3_bucket" "static_assets" {
   bucket = "collab-${random_string.bucket_suffix.result}"
+  # website {
+  #   index_document = "index.html"
+  #   error_document = "404.html"
+  # }
+}
+
+resource "aws_s3_bucket" "documents" {
+  bucket = "collab-documents-${random_string.bucket_suffix.result}"
   # website {
   #   index_document = "index.html"
   #   error_document = "404.html"
