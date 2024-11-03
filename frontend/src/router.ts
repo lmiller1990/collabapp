@@ -10,7 +10,7 @@ export const router = createRouter({
       component: CreateView,
     },
     {
-      path: "/:uuid",
+      path: "/:id",
       component: EditView,
     },
   ],

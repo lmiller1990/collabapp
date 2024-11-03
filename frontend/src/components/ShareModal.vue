@@ -12,8 +12,17 @@ import Input from "./Input.vue";
 import Button from "./Button.vue";
 import { useRouter } from "vue-router";
 
-defineProps<{
+const props = defineProps<{
+  /**
+   * Whether we show the "enter your own email" field (new document)
+   * or just the "share" field (existing document).
+   */
   needsOwnerEmail: boolean;
+
+  /**
+   * The content of the editor as HTML.
+   */
+  content: string;
 }>();
 
 const open = defineModel<boolean>();
@@ -67,7 +76,7 @@ async function handleSubmit() {
         body: JSON.stringify({
           shared_with: emails.value,
           email: ownEmail.value,
-          text_content: "",
+          text: props.content,
         }),
       },
     );
@@ -154,7 +163,9 @@ async function handleSubmit() {
                 </div>
               </div>
               <div class="mt-5 sm:mt-6">
-                <Button type="submit" :loading="loading"> Share </Button>
+                <Button class="w-full" type="submit" :loading="loading">
+                  Share
+                </Button>
               </div>
             </DialogPanel>
           </TransitionChild>

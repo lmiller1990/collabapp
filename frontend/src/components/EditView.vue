@@ -1,37 +1,32 @@
 <script lang="ts" setup>
-import { ref } from "vue";
-import Editor from "./Editor.vue";
-import ShareModal from "./ShareModal.vue";
-import Button from "./Button.vue";
+import { useRoute } from "vue-router";
+import EditDoc from "./EditDoc.vue";
 
-const msg = ref("");
+const route = useRoute();
+const content = defineModel<string>();
 
-async function greet() {
-  const res = await window.fetch(`${import.meta.env.VITE_API_ENDPOINT}/greet`, {
-    mode: "cors",
-    headers: {
-      "Content-Type": "application/json", // or any other required header
+async function fetchDoc() {
+  const res = await window.fetch(
+    `${import.meta.env.VITE_API_ENDPOINT}/documents/${route.params.id}`,
+    {
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json", // or any other required header
+      },
     },
-  });
-  const data = await res.json();
-  msg.value = data.foo;
+  );
+  const data = (await res.json()) as { doc: string };
+  const parsed = JSON.parse(data.doc) as { text: string };
+  content.value = parsed.text;
 }
 
-greet();
-
-const open = ref(true);
+fetchDoc();
 </script>
 
 <template>
-  <div class="grid grid-cols-2 h-full p-2">
-    <div class="">
-      <Editor />
-    </div>
-    <div class="flex justify-end">
-      <div>
-        <ShareModal :needs-owner-email="true" v-model="open" />
-        <Button @click="open = true">Share</Button>
-      </div>
-    </div>
-  </div>
+  <EditDoc
+    v-if="content"
+    :content="content"
+    @update:model-value="(html) => (content = html)"
+  />
 </template>

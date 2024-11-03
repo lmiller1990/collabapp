@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from "vue";
-import Editor from "./Editor.vue";
 import ShareModal from "./ShareModal.vue";
 import Button from "./Button.vue";
+import EditDoc from "./EditDoc.vue";
 
 const msg = ref("");
 
@@ -20,18 +20,16 @@ async function greet() {
 greet();
 
 const open = ref(true);
+const content = ref("<p>Write something...</p>");
 </script>
 
 <template>
-  <div class="grid grid-cols-2 h-full p-2">
-    <div class="">
-      <Editor />
-    </div>
-    <div class="flex justify-end">
-      <div>
-        <ShareModal :needs-owner-email="true" v-model="open" />
-        <Button @click="open = true">Share</Button>
-      </div>
-    </div>
-  </div>
+  <EditDoc
+    v-if="content"
+    :content="content"
+    @update:model-value="(html) => (content = html)"
+  >
+    <ShareModal :content="content" :needs-owner-email="true" v-model="open" />
+    <Button @click="open = true">Share</Button>
+  </EditDoc>
 </template>

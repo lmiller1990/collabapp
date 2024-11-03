@@ -2,7 +2,7 @@ import uuid
 from typing import Union, List
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from collab.dynamo import create_document
+from collab.dynamo import create_document, fetch_document_by_id
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -46,7 +46,7 @@ def share(emails: List[str]):
 class CreatePayload(BaseModel):
     email: str
     shared_with: list[str]
-    text_content: str
+    text: str
 
 
 @app.post("/create")
@@ -56,8 +56,15 @@ def create(payload: CreatePayload):
     emails = ",".join(
         set(map(lambda x: x.strip(), [payload.email, *payload.shared_with]))
     )
-    create_document(str(uid), emails, payload.text_content)
+    create_document(str(uid), emails, payload.text)
     return JSONResponse(content=jsonable_encoder({"uuid": uid}))
+
+
+@app.get("/documents/{doc_id}")
+def get_document(doc_id: str):
+    row, doc = fetch_document_by_id(doc_id)
+    print(row, doc)
+    return JSONResponse(content=jsonable_encoder({"doc": doc}))
 
 
 handler = Mangum(app, lifespan="off")

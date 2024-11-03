@@ -6,7 +6,7 @@ const { loading = false } = defineProps<{
 
 <template>
   <button
-    class="w-full flex justify-center items-center h-[32px] rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
+    class="flex justify-center items-center h-[32px] rounded bg-indigo-600 px-2 py-1 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-70"
     :disabled="loading"
   >
     <svg

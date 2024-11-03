@@ -1,15 +1,32 @@
 <script lang="ts" setup>
 import { useEditor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref, watchEffect } from "vue";
 import { ItalicIcon } from "@heroicons/vue/24/solid";
 import { BoldIcon } from "@heroicons/vue/24/solid";
 import { StrikethroughIcon } from "@heroicons/vue/24/solid";
 import { CodeBracketIcon } from "@heroicons/vue/24/solid";
 
+const emits = defineEmits<{
+  (e: "update:modelValue", html: string): void;
+}>();
+
+const props = defineProps<{
+  modelValue: string;
+}>();
+
+const content = ref<string>(props.modelValue);
+
 const editor = useEditor({
-  content: "<p>Write something...</p>",
+  content: content.value,
   extensions: [StarterKit],
+});
+
+watchEffect(() => {
+  if (!editor.value) {
+    return;
+  }
+  emits("update:modelValue", editor.value?.getHTML());
 });
 
 onMounted(() => {
@@ -63,7 +80,7 @@ const controls = computed(() => {
         <component :is="control.icon" class="size-3" />
       </button>
     </div>
-    <EditorContent :editor="editor" class="flex-grow" />
+    <EditorContent v-model="content" :editor="editor" class="flex-grow" />
   </div>
 </template>
 

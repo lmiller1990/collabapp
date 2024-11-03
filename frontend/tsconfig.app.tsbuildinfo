@@ -1,1 +1,1 @@
-{"root":["./src/main.ts","./src/vite-env.d.ts","./src/app.vue"],"version":"5.6.3"}
+{"root":["./src/main.ts","./src/router.ts","./src/vite-env.d.ts","./src/app.vue","./src/components/button.vue","./src/components/createview.vue","./src/components/editdoc.vue","./src/components/editview.vue","./src/components/editor.vue","./src/components/input.vue","./src/components/sharemodal.vue"],"version":"5.6.3"}
