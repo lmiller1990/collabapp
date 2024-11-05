@@ -15,5 +15,5 @@ Deploy: `terraform apply`
 ## Dev
 
 ```sh
-turbo run dev --filter frontend # just for frontend
+pnpx gulp dev
 ```

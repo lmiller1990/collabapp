@@ -1,9 +1,14 @@
 {
+  "type": "module",
   "name": "collab",
   "workspaces": {
     "packages": [
       "frontend"
     ]
   },
-  "packageManager": "pnpm@9.10.0"
+  "packageManager": "pnpm@9.10.0",
+  "dependencies": {
+    "execa": "^9.5.1",
+    "gulp": "^5.0.0"
+  }
 }
