@@ -147,7 +147,7 @@ resource "aws_cloudwatch_log_group" "api_gw_logging" {
 }
 
 output "api_endpoint" {
-  value       = "${aws_api_gateway_deployment.my_deployment.invoke_url}/dev"
+  value       = "${aws_api_gateway_deployment.my_deployment.invoke_url}/app"
   description = "The base URL of the API Gateway endpoint"
 }
 
