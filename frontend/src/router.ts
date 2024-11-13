@@ -3,7 +3,7 @@ import CreateView from "./components/CreateView.vue";
 import EditView from "./components/EditView.vue";
 
 export const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory("/"),
   routes: [
     {
       path: "/",

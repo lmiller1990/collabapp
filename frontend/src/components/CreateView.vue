@@ -24,11 +24,8 @@ const content = ref("<p>Write something...</p>");
 </script>
 
 <template>
-  <EditDoc
-    v-if="content"
-    :content="content"
-    @update:model-value="(html) => (content = html)"
-  >
+  Create View
+  <EditDoc :content="content" @update:model-value="(html) => (content = html)">
     <ShareModal :content="content" :needs-owner-email="true" v-model="open" />
     <Button @click="open = true">Share</Button>
   </EditDoc>

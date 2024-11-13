@@ -1,3 +1,7 @@
+variable "environment" {
+  type = string
+}
+
 provider "aws" {
   region = "ap-southeast-2"
 }
@@ -40,6 +44,29 @@ resource "aws_iam_role_policy" "lambda_exec_policy" {
         ],
         Effect   = "Allow",
         Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",     # Include this if you need to write to DynamoDB
+          "dynamodb:Query",       # Include this if you need to run queries
+          "dynamodb:Scan"         # Include this if you need to scan the table
+        ],
+        Effect   = "Allow",
+        Resource = aws_dynamodb_table.collab.arn
+      },
+      {
+        Action = [
+          "s3:ListBucket",         # Grants permission to list objects in the bucket
+          "s3:GetObject"           # Grants permission to retrieve objects from the bucket
+        ],
+        Effect   = "Allow",
+        Resource = [
+          "arn:aws:s3:::lachlan-collab-${var.environment}",
+          "arn:aws:s3:::lachlan-collab-${var.environment}/*",
+          "arn:aws:s3:::lachlan-collab-documents-${var.environment}",
+          "arn:aws:s3:::lachlan-collab-documents-${var.environment}/*"
+        ]
       }
     ]
   })
@@ -134,19 +161,18 @@ resource "random_string" "bucket_suffix" {
 }
 
 resource "aws_s3_bucket" "static_assets" {
-  bucket = "collab-${random_string.bucket_suffix.result}"
-  # website {
-  #   index_document = "index.html"
-  #   error_document = "404.html"
-  # }
+  bucket = "lachlan-collab-${var.environment}"
+
+  cors_rule {
+    allowed_methods = ["GET", "HEAD"]
+    allowed_origins = ["*"]
+    allowed_headers = ["*"]
+    max_age_seconds = 3000
+  }
 }
 
 resource "aws_s3_bucket" "documents" {
-  bucket = "collab-documents-${random_string.bucket_suffix.result}"
-  # website {
-  #   index_document = "index.html"
-  #   error_document = "404.html"
-  # }
+  bucket = "lachlan-collab-documents-${var.environment}"
 }
 
 resource "aws_s3_bucket_website_configuration" "static_assets_website" {

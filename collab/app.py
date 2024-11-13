@@ -1,6 +1,6 @@
 import uuid
 from typing import Union, List
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from collab.dynamo import create_document, fetch_document_by_id
 from fastapi.encoders import jsonable_encoder
@@ -27,11 +27,6 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
 @app.get("/greet")
 def greet():
     return {"foo": "bar"}
@@ -39,7 +34,6 @@ def greet():
 
 @app.post("/share")
 def share(emails: List[str]):
-    print(emails)
     pass
 
 
@@ -47,6 +41,12 @@ class CreatePayload(BaseModel):
     email: str
     shared_with: list[str]
     text: str
+
+
+@app.get("/app")
+def index():
+    _, index_html = fetch_document_by_id("lachlan-collab-dev", "index.html")
+    return HTMLResponse(index_html)
 
 
 @app.post("/create")
@@ -62,7 +62,7 @@ def create(payload: CreatePayload):
 
 @app.get("/documents/{doc_id}")
 def get_document(doc_id: str):
-    row, doc = fetch_document_by_id(doc_id)
+    row, doc = fetch_document_by_id("lachlan-collab-documents-dev", doc_id)
     print(row, doc)
     return JSONResponse(content=jsonable_encoder({"doc": doc}))
 
